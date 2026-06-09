@@ -1,0 +1,130 @@
+<mujoco model="HOPPY-E0-final">
+  <compiler angle="radian" autolimits="true" meshdir="meshes"/>
+  <option timestep="0.001" gravity="0 0 -9.81" integrator="RK4"
+          solver="Newton" iterations="50" tolerance="1e-8"/>
+  <default>
+    <geom condim="3" friction="0.8 0.005 0.0001"
+          solref="0.005 1" solimp="0.98 0.999 0.001 0.5 2"/>
+    <joint damping="0.02"/>
+  </default>
+
+  <asset>
+    <mesh name="base_urdf" file="base_urdf.stl"/>
+    <mesh name="link1_urdf" file="link1_urdf.stl"/>
+    <mesh name="link2_urdf" file="link2_urdf.stl"/>
+    <mesh name="link3_urdf" file="link3_urdf.stl"/>
+    <mesh name="link4_urdf" file="link4_urdf.stl"/>
+  
+    <!-- Floor texture -->
+    <texture name="grid" type="2d" builtin="checker"
+             rgb1="0.38 0.38 0.38" rgb2="0.18 0.18 0.18" width="512" height="512"/>
+    <material name="floor_mat" texture="grid" texrepeat="5 5" reflectance="0.04"/>
+    <!-- Robot materials by link (matching real robot colors from photos) -->
+    <material name="base_mat"  rgba="0.14 0.14 0.16 1"/>  <!-- dark anodized -->
+    <material name="link1_mat" rgba="0.14 0.14 0.16 1"/>  <!-- dark column -->
+    <material name="link2_mat" rgba="0.60 0.63 0.67 1"/>  <!-- silver boom -->
+    <material name="link3_mat" rgba="0.14 0.14 0.16 1"/>  <!-- dark hip -->
+    <material name="link4_mat" rgba="0.52 0.54 0.56 1"/>  <!-- carbon shank -->
+    <material name="foot_mat"  rgba="0.80 0.08 0.08 1"/>  <!-- red foot -->
+  </asset>
+
+  
+  <contact>
+    <exclude body1="world"     body2="Link1"/>
+    <exclude body1="world"     body2="Link2"/>
+    <exclude body1="Link1"     body2="Link2"/>
+    <exclude body1="Link1"     body2="Link3"/>
+    <exclude body1="Link1"     body2="Link4"/>
+    <exclude body1="Link1"     body2="foot_body"/>
+    <exclude body1="Link2"     body2="Link3"/>
+    <exclude body1="Link2"     body2="Link4"/>
+    <exclude body1="Link2"     body2="foot_body"/>
+    <exclude body1="Link3"     body2="Link4"/>
+    <exclude body1="Link3"     body2="foot_body"/>
+  </contact>
+
+  <worldbody>
+    <!-- Video cameras -->
+    <camera name="side_view"  pos="0 -3.0 1.2"  xyaxes="1 0 0  0 0.3 1"/>
+    <camera name="top_view"   pos="0 0 4.0"      xyaxes="1 0 0  0 1 0"/>
+    <camera name="front_view" pos="-2.5 0 1.0"   xyaxes="0 1 0  0 0 1"/>
+    <light name="sun"  pos="2 -1 4"  dir="-0.4 0.2 -0.9" diffuse="0.85 0.85 0.85" specular="0.4 0.4 0.4"/>
+    <light name="fill" pos="-3 3 2"  dir="0.6 -0.5 -0.6" diffuse="0.30 0.30 0.35"/>
+    <geom name="floor" type="plane" size="5 5 0.1" material="floor_mat"
+          friction="0.8 0.005 0.0001" condim="3"/>
+    <geom type="mesh" material="base_mat" mesh="base_urdf" contype="0" conaffinity="0" density="0"/>
+    <body name="Link1" pos="0 0 0.04">
+      <inertial pos="1.19035e-06 -7.23296e-08 0.110977" quat="0.999539 -3.72317e-07 -1.22626e-05 -0.0303481" mass="1.05189" diaginertia="0.0015755 0.00119525 0.000930447"/>
+      <joint name="joint1" pos="0 0 0" axis="0 0 1" damping="0.002"/>
+      <geom type="mesh" material="link1_mat" mesh="link1_urdf" contype="0" conaffinity="0" density="0"/>
+      <body name="Link2" pos="-0.00227444 -0.037431 0.21" quat="0.705252 0.707058 0.00831865 -0.0511876">
+        <inertial pos="-0.513966 0.0016327 -0.00902703" quat="0.500001 0.500001 0.499999 0.499999" mass="1.87654" diaginertia="0.0636508 0.0630427 0.00259304"/>
+        <joint name="joint2" pos="0 0 0" axis="0 0 1" range="-0.5 0.5" damping="2.0" stiffness="300" springref="0.243"/>
+        <geom type="mesh" material="link2_mat" mesh="link2_urdf" contype="0" conaffinity="0" density="0"/>
+        <!-- Counterweight (not in URDF mesh, added from get_params.m data) -->
+        <!-- CW at positive X end of boom, ~0.320m from pivot per get_params.m -->
+        <geom name="cw_disc1" type="cylinder" size="0.058 0.036"
+              pos="0.292 0 -0.010" euler="0 1.5708 0"
+              rgba="0.10 0.10 0.12 1" mass="0.55"/>
+        <geom name="cw_disc2" type="cylinder" size="0.058 0.036"
+              pos="0.348 0 -0.010" euler="0 1.5708 0"
+              rgba="0.10 0.10 0.12 1" mass="0.55"/>
+        <body name="Link3" pos="-0.6585 0 0.0425" quat="0.677009 -0.204104 -0.677009 0.204104">
+          <inertial pos="0.00864428 -0.0327981 0.0561207" quat="0.511267 0.498647 -0.497438 0.492456" mass="0.332207" diaginertia="0.000345397 0.000299821 7.12146e-05"/>
+          <joint name="joint3" pos="0 0 0" axis="0 0 1" range="0.5 2.8" actuatorfrcrange="-10 10"/>
+          <geom type="mesh" material="link3_mat" mesh="link3_urdf" contype="0" conaffinity="0" density="0"/>
+          <body name="Link4" pos="0 -0.1 0.0095" quat="0 -0.288647 -0.957436 0">
+            <inertial pos="-0.0162703 -0.0747425 -0.0260399" quat="0.285014 0.647037 -0.285746 0.646884" mass="0.172793" diaginertia="0.000170791 0.000165707 3.2109e-05"/>
+            <joint name="joint4" pos="0 0 0" axis="0 0 -1" range="-2.6 -0.4" actuatorfrcrange="-10 10"/>
+            <geom type="mesh" material="link4_mat" mesh="link4_urdf" contype="0" conaffinity="0" density="0"/>
+          
+            <!-- Foot sphere - REGATÓN rubber bumper per URDF CSV -->
+            <!-- Position in Link4 frame: Y=-0.164 (mesh Y_min+foot_r) -->
+            <body name="foot_body" pos="0.024 -0.164 -0.028">
+              <geom name="foot" type="sphere" size="0.018"
+                    material="foot_mat" mass="0.010"
+                    condim="1" solref="0.003 1"
+                    solimp="0.99 0.9999 0.0005 0.5 2"/>
+              <site name="foot_site" size="0.019"/>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <!-- Actuators: hip=joint3, knee=joint4, yaw=joint1 -->
+  <!-- tau_max from get_params.m: hip=3.352Nm, knee=3.589Nm -->
+  <actuator>
+    <motor name="hip_m"  joint="joint3" gear="1" ctrlrange="-3.352 3.352"/>
+    <motor name="knee_m" joint="joint4" gear="1" ctrlrange="-3.589 3.589"/>
+    <motor name="yaw_m"  joint="joint1" gear="1" ctrlrange="-15.00 15.00"/>
+  </actuator>
+
+  <sensor>
+    <jointpos  name="s_yaw"    joint="joint1"/>
+    <jointpos  name="s_pitch"  joint="joint2"/>
+    <jointpos  name="s_hip"    joint="joint3"/>
+    <jointpos  name="s_knee"   joint="joint4"/>
+    <jointvel  name="sv_yaw"   joint="joint1"/>
+    <jointvel  name="sv_pitch" joint="joint2"/>
+    <jointvel  name="sv_hip"   joint="joint3"/>
+    <jointvel  name="sv_knee"  joint="joint4"/>
+    <framepos  name="foot_pos"   objtype="site" objname="foot_site"/>
+    <touch     name="foot_touch" site="foot_site"/>
+  </sensor>
+
+  <!-- Default key for static display pose:
+       joint1=0 (yaw), joint2=0.084 (boom flat), joint3=0 (hip), joint4=-0.30 (knee) -->
+  <!-- Camera for nice default view -->
+  <visual>
+    <global azimuth="135" elevation="-15" offwidth="1280" offheight="720"/>
+  </visual>
+
+  <keyframe>
+    <!-- Static display: boom flat, leg hanging with foot just touching floor -->
+    <key name="display"   qpos="0  0.243  0.24 -0.13" ctrl="0 0 0"/>  <!-- foot on floor, shank vertical -->
+    <!-- Hopping IC from MATLAB MAIN.m: q0=[0,0,pi/3,-pi/2] -->
+    <key name="matlab_ic" qpos="0  0.2794 1.7128 -1.5008" ctrl="0 0 0"/>  <!-- URDF equilibrium -->
+  </keyframe>
+</mujoco>
